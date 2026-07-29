@@ -10,6 +10,7 @@ from shared.models.bill import Bill
 from shared.utils.config import get_settings
 
 from .parser import parse_bill_data
+from .query_config import get_ai_search_query
 from .text_extraction import (
     extract_text_from_api_payload,
     select_latest_text_entry,
@@ -36,26 +37,10 @@ class LegiScanClient:
     USER_AGENT = "cntr-aisle-ingestion/1.0 (+https://github.com/brown-cntr/cntr-aisle-services)"
     MAX_QUERY_BYTES = 1024
 
-    AI_SEARCH_TERMS = [
-        "digital NEAR replica", "computer-generated", "digital NEAR forger",
-        "artificial NEAR intelligence",
-        # Covers the former "... NEAR decision NEAR making/tool/system" and
-        # "... NEAR final NEAR decision" variants, which pushed the query past 1024 bytes
-        "automated NEAR decision", "automatic NEAR decision",
-        "decision NEAR making NEAR tool",
-        "face NEAR recog", "facial NEAR recog", "voice NEAR recog",
-        "iris NEAR recog", "gait NEAR recog", "genAI", "gen-AI",
-        "generative NEAR AI", "generative NEAR tech", "generative NEAR model",
-        "generative NEAR artificial", "machine NEAR learning", "deep NEAR learning",
-        "chat NEAR bot", "virtual NEAR assistant", "ChatGPT", "Chat-GPT",
-        "language NEAR model", "AI NEAR task NEAR force", "AI NEAR advis",
-        "AI NEAR audit", "AI NEAR generate", "AI NEAR snoop", "deep NEAR fake",
-        "synthetic NEAR media", "digital NEAR assistant", "natural NEAR language NEAR process",
-        "computer NEAR vision", "frontier NEAR model", "software NEAR agent",
-        "embodied NEAR robot", "foundation NEAR model", "LLM", "LLMs",
-        "Information NEAR Technology NEAR Act",
-    ]
-    AI_SEARCH_QUERY = " OR ".join(f"({term})" for term in AI_SEARCH_TERMS)
+    # Assembled from services/ingestion/config/ai_search_query.yaml at import time
+    # (falls back to a built-in default if the config is missing/unreadable). Edit
+    # the YAML to tune coverage; do not hardcode the query here.
+    AI_SEARCH_QUERY = get_ai_search_query()
 
     def __init__(self, api_key: Optional[str] = None):
         """Initialize LegiScan client"""
